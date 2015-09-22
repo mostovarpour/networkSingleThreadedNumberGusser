@@ -1,10 +1,4 @@
 #include "server.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-#define MAX 1024
-
-void guessing_numbers();
 
 /*
  * main()
@@ -47,7 +41,6 @@ int main(int argc, char** argv) {
             printf("\nAccepted client\n");            
             handle_client(client_socket);
         }
-        guessing_numbers();
     }
 }
 
@@ -58,8 +51,19 @@ int main(int argc, char** argv) {
 void handle_client(int client_socket) {
     char input;
     int keep_going = TRUE;
+    char response;
+    int fence = MAX/2;
+    int increment = MAX/2;
+    int number = 0;
     
+    //Prompting the user for input
+    write(client_socket, "Think of a number between 1 and 1000.\n", sizeof(char)*39);
+
     while (keep_going) {
+	write(client_socket, "Is your number greater than ", sizeof(char)*28);
+	write(client_socket, &fence, sizeof(int));
+	write(client_socket, "\n\n", sizeof(char)*4);
+	
         // read char from client
         switch (read(client_socket, &input, sizeof(char))) {
             case 0:
@@ -67,19 +71,24 @@ void handle_client(int client_socket) {
                 printf("\nEnd of stream, returning ...\n");
                 break;
             case -1:
-                perror("Error reading from network!\n");
+                perror("Error Reading from network!\n");
                 keep_going = FALSE;
                 break;
         }
-        printf("%c", input);
         
         if (input == 'q') {
             write(client_socket, &input, sizeof(char));
             break;
         }
+
+	if (input == 'y') {
+
+	} else {
+
+	}
         
         // send result back to client
-        write(client_socket, &input, sizeof(char));
+        //write(client_socket, &input, sizeof(char));
     }
     
     // cleanup
@@ -89,36 +98,4 @@ void handle_client(int client_socket) {
     } else {
         printf("\nClosed socket to client, exit");
     }
-}
-
-void guessing_numbers()
-{
-    char response;
-    int fence = MAX/2;
-    int increment = MAX/2;
-    int number = 0;
-
-    while (increment)
-    {
-        printf("Is your team number greater than %d", fence);
-        response = getchar(); getchar();
-        printf("response: %c\n", response);
-
-        if (response == 'y')
-        {
-            number += increment;
-            increment /= 2;
-            fence += increment;
-            printf("Add increment %d\n", increment);
-        }
-        else
-        {
-            increment /= 2;
-            fence -= increment;
-            printf("Subtract increment: %d\n", increment);
-        }
-    }
-
-    number++;
-    printf("Your number: %i\n", number);
 }
