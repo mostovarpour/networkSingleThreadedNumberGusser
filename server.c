@@ -1,4 +1,8 @@
 #include "server.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 1024
 
 /*
  * main()
@@ -49,6 +53,7 @@ int main(int argc, char** argv) {
  * handle client
  */
 void handle_client(int client_socket) {
+    //Our code for keeping track the user input and number guessing
     char input;
     int keep_going = TRUE;
     char response;
