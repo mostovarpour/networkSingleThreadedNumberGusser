@@ -1,10 +1,31 @@
+// Daniel Durazo
+// Matthew Ostovarpour
+
 #include "header.h"
 
-#define MAX 1024 // Highest number to "guess" Must be a power of 2!
+#define MAX 1024 // Highest number to "guess". Must be a power of 2!
 
 /*
  * This function was originally called: "handle_client" in the server code.
  * Now the server accepts a client, calls number_guesser, waits for new client.
+ *
+ * We use a buffer to read 100 bytes at a time. This allows us to handle the case
+ * where the user enters an entire word rather than just the y/n/q character.
+ *
+ * It also "clears" out the input stream so that it is back to empty, meaning the
+ * next user input is assured to be read (rather than the remaining bytes from a
+ * previous input).
+ *
+ * Sending numbers back to the client also is handled through a buffer. As the
+ * client is assumed to be telnet, data sent back to the client would be assumed
+ * to be text. Sending an integer to the client would display incorrectly. To
+ * solve this, we first copy the integer to a string using sprintf and the unsigned
+ * integer format tag "%u". This allows changing of MAX and proper display of the
+ * 1 to MAX for the user to choose.
+ *
+ * MAX needs to be a power of 2 in order to function correctly. If not a power of
+ * 2, the integer division on odd numbers results in the fence/increment to become
+ * incorrect...
  */
 void number_guesser(int client_socket) {
 
@@ -51,6 +72,7 @@ void number_guesser(int client_socket) {
         write(client_socket, "?\n => ", sizeof(char)*6);
 
         // Read input from socket. 100 bytes should be enough to grab all input
+        // (including any potential extra characters sent by telnet)
         if (read(client_socket, &input, sizeof(input)) < 0) {
 
             // Something went wrong, try to close socket and exit with error.
@@ -65,7 +87,7 @@ void number_guesser(int client_socket) {
             return;
         }
 
-        // Case: user input "yes", their number is larger than the current fence
+        // Case: user input "y" or "yes", their number is larger than the current fence
         if (input[0] == 'y') {
 
             // So increase the current number guess by increment
